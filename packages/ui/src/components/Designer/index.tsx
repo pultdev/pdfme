@@ -504,6 +504,7 @@ const TemplateEditor = ({
             activeElements={activeElements}
             schemasList={schemasList}
             schemas={schemasList[pageCursor] ?? []}
+            pageCursor={pageCursor}
             changeSchemas={changeSchemas}
             onSortEnd={onSortEnd}
             onEdit={(id) => {
@@ -512,6 +513,9 @@ const TemplateEditor = ({
                 onEdit([editingElem]);
               }
             }}
+            onSelectSchemaOnPage={(pageIndex, id) =>
+              selectSchemas([{ schemaId: id }], { pageIndex })
+            }
             onEditEnd={onEditEnd}
             deselectSchema={onEditEnd}
             sidebarOpen={sidebarOpen}

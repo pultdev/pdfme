@@ -29,10 +29,17 @@ const SelectableSortableContainer = (
   props: Pick<
     SidebarProps,
     'schemas' | 'onEdit' | 'onSortEnd' | 'hoveringSchemaId' | 'onChangeHoveringSchemaId'
-  >,
+  > & { sortable?: boolean },
 ) => {
   const { token } = theme.useToken();
-  const { schemas, onEdit, onSortEnd, hoveringSchemaId, onChangeHoveringSchemaId } = props;
+  const {
+    schemas,
+    onEdit,
+    onSortEnd,
+    hoveringSchemaId,
+    onChangeHoveringSchemaId,
+    sortable = true,
+  } = props;
   const [selectedSchemas, setSelectedSchemas] = useState<SchemaForUI[]>([]);
   const [dragOverlaidItems, setClonedItems] = useState<SchemaForUI[] | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -85,7 +92,7 @@ const SelectableSortableContainer = (
 
   return (
     <DndContext
-      sensors={sensors}
+      sensors={sortable ? sensors : []}
       collisionDetection={closestCorners}
       onDragStart={({ active }: DragStartEvent) => {
         setActiveId(String(active.id));
