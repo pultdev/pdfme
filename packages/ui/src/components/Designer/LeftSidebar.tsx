@@ -65,6 +65,7 @@ const LeftSidebar = ({
 }) => {
   const { token } = theme.useToken();
   const pluginsRegistry = useContext(PluginsRegistry);
+  const options = useContext(OptionsContext);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
@@ -100,15 +101,34 @@ const LeftSidebar = ({
         if (!plugin?.propPanel.defaultSchema) return null;
 
         const pluginType = plugin.propPanel.defaultSchema.type;
+        const hasIcon = Boolean(options.icons?.[pluginType] ?? plugin.icon);
 
         return (
           <Draggable key={label} scale={scale} basePdf={basePdf} plugin={plugin}>
             <Button
               className={DESIGNER_CLASSNAME + 'plugin-' + pluginType}
               onMouseDown={() => setIsDragging(true)}
-              style={{ width: 35, height: 35, marginTop: '0.25rem', padding: '0.25rem' }}
+              style={{
+                width: 'calc(100% - 0.5rem)',
+                height: 35,
+                marginTop: '0.25rem',
+                padding: '0.25rem 0.5rem',
+                justifyContent: 'flex-start',
+                gap: '0.5rem',
+              }}
             >
-              <PluginIcon plugin={plugin} label={label} />
+              {hasIcon && <PluginIcon plugin={plugin} label={label} />}
+              <span
+                title={label}
+                style={{
+                  fontSize: 12,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {label}
+              </span>
             </Button>
           </Draggable>
         );
