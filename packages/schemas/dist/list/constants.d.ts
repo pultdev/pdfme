@@ -1,0 +1,10 @@
+import type { LIST_STYLE } from './types.js';
+export declare const LIST_STYLE_BULLET: LIST_STYLE;
+export declare const LIST_STYLE_ORDERED: LIST_STYLE;
+export declare const DEFAULT_LIST_STYLE: LIST_STYLE;
+export declare const DEFAULT_MARKER = "\u2022";
+export declare const DEFAULT_MARKER_WIDTH = 6;
+export declare const DEFAULT_MARKER_GAP = 2;
+export declare const DEFAULT_INDENT_SIZE = 6;
+export declare const DEFAULT_ITEM_SPACING = 1;
+export declare const MAX_INDENT_LEVEL = 8;
