@@ -350,7 +350,7 @@ const TemplateEditor = ({
     const s = {
       id: uuid(),
       ...defaultSchema,
-      name: newSchemaName(i18n('field')),
+      name: newSchemaName(defaultSchema.name || i18n('field')),
       position: {
         x: ensureMiddleValue(
           paddingLeft,
