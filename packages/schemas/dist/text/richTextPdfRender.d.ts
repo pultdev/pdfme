@@ -1,0 +1,35 @@
+import type { PDFFont, Rotation } from '@pdfme/pdf-lib';
+import type { ColorType, Font, PDFRenderProps } from '@pdfme/common';
+import type { Font as FontKitFont } from 'fontkit';
+import type { TextSchema } from './types.js';
+import { hex2PrintingColor } from '../utils.js';
+type TextColor = ReturnType<typeof hex2PrintingColor>;
+export declare const renderInlineMarkdownText: (arg: {
+    value: string;
+    schema: TextSchema;
+    font: Font;
+    embedPdfFont: (fontName: string) => Promise<PDFFont>;
+    fontKitFont: FontKitFont;
+    pdfDoc: PDFRenderProps<TextSchema>["pdfDoc"];
+    page: PDFRenderProps<TextSchema>["page"];
+    pdfLib: PDFRenderProps<TextSchema>["pdfLib"];
+    _cache: Map<string | number, unknown>;
+    colorType: ColorType;
+    fontSize: number;
+    color: TextColor;
+    alignment: string;
+    verticalAlignment: string;
+    lineHeight: number;
+    characterSpacing: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    pivotPoint: {
+        x: number;
+        y: number;
+    };
+    rotate: Rotation;
+    opacity: number | undefined;
+}) => Promise<void>;
+export {};
