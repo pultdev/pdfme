@@ -180,6 +180,7 @@ type UseZoomProps = {
   size: Size;
   hasRulers?: boolean;
   initialZoomLevel?: number;
+  initialZoomMode?: ZoomMode;
   onZoomCommit?: () => void;
 };
 
@@ -227,10 +228,11 @@ export const useZoom = ({
   size,
   hasRulers = false,
   initialZoomLevel = 1,
+  initialZoomMode = 'manual',
   onZoomCommit,
 }: UseZoomProps) => {
   const [zoomLevel, setZoomLevelState] = useState(initialZoomLevel);
-  const [zoomMode, setZoomModeState] = useState<ZoomMode>('manual');
+  const [zoomMode, setZoomModeState] = useState<ZoomMode>(initialZoomMode);
   const [displayScale, setDisplayScale] = useState(0);
   const [renderScale, setRenderScale] = useState(0);
 
@@ -431,6 +433,8 @@ export const useZoom = ({
     pageSizes,
     size.height,
     size.width,
+    // Re-run once the canvas is mounted so an initial fit mode can measure it.
+    zoomContainerReady,
   ]);
 
   useLayoutEffect(() => {

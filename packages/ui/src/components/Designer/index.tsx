@@ -132,6 +132,7 @@ const TemplateEditor = ({
       size: sizeExcSidebars,
       hasRulers: true,
       initialZoomLevel: options.zoomLevel ?? 1,
+      initialZoomMode: options.zoomLevel === undefined ? 'fit-width' : 'manual',
     });
   const previousOptionsZoomLevelRef = useRef(options.zoomLevel);
 
