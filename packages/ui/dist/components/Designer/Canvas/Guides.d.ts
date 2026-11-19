@@ -6,4 +6,6 @@ declare const _Guides: ({ paperSize, horizontalRef, verticalRef, }: {
     horizontalRef: Ref<GuidesComponent> | undefined;
     verticalRef: Ref<GuidesComponent> | undefined;
 }) => React.JSX.Element;
-export default _Guides;
+/** The rulers, unless the designer's `rulers` option switches them off. */
+declare const Guides: (props: React.ComponentProps<typeof _Guides>) => React.JSX.Element | null;
+export default Guides;

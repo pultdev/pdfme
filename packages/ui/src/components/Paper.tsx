@@ -2,6 +2,7 @@ import React, { MutableRefObject, ReactNode, useContext } from 'react';
 import { ZOOM, SchemaForUI, Size, getFallbackFontName } from '@pdfme/common';
 import { FontContext } from '../contexts.js';
 import { RULER_HEIGHT, PAGE_GAP } from '../constants.js';
+import { getFitPageHeight } from '../helper.js';
 
 const Paper = (props: {
   paperRefs: MutableRefObject<HTMLDivElement[]>;
@@ -13,6 +14,8 @@ const Paper = (props: {
   renderPaper: (arg: { index: number; paperSize: Size }) => ReactNode;
   renderSchema: (arg: { index: number; schema: SchemaForUI }) => ReactNode;
   hasRulers?: boolean;
+  /** A single page sits in the middle of the space above the control bar, instead of at the top. */
+  centerVertically?: boolean;
 }) => {
   const {
     paperRefs,
@@ -24,6 +27,7 @@ const Paper = (props: {
     renderPaper,
     renderSchema,
     hasRulers,
+    centerVertically,
   } = props;
   const font = useContext(FontContext);
   const rulerHeight = hasRulers ? RULER_HEIGHT : 0;
@@ -63,6 +67,12 @@ const Paper = (props: {
         if (!hasRulers) {
           // If no rulers (i.e. Preview/Form) then we'll add an initial gap at the top of the first page
           pageTop += PAGE_GAP * 2;
+        }
+
+        if (centerVertically && backgrounds.length === 1 && scale > 0) {
+          // Lengths here are before the scale transform.
+          const centred = (getFitPageHeight(size.height) / scale - paperSize.height) / 2;
+          pageTop = Math.max(rulerHeight, centred);
         }
 
         return (

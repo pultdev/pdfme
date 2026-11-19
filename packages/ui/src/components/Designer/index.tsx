@@ -23,7 +23,8 @@ import { DndContext, type DragEndEvent } from '@dnd-kit/core';
 import RightSidebar from './RightSidebar/index.js';
 import LeftSidebar from './LeftSidebar.js';
 import Canvas from './Canvas/index.js';
-import { RULER_HEIGHT, RIGHT_SIDEBAR_WIDTH, LEFT_SIDEBAR_WIDTH } from '../../constants.js';
+import { RULER_HEIGHT, RIGHT_SIDEBAR_WIDTH } from '../../constants.js';
+import { getInitialZoomMode, getLeftSidebarWidth, getShowRulers } from '../../designerOptions.js';
 import { I18nContext, OptionsContext, PluginsRegistry } from '../../contexts.js';
 import {
   schemasList2template,
@@ -90,7 +91,8 @@ const TemplateEditor = ({
   const options = useContext(OptionsContext);
   const maxZoom = useMaxZoom();
 
-  const canvasWidth = size.width - LEFT_SIDEBAR_WIDTH;
+  const leftSidebarWidth = getLeftSidebarWidth(options);
+  const canvasWidth = size.width - leftSidebarWidth;
 
   const [hoveringSchemaId, setHoveringSchemaId] = useState<string | null>(null);
   const [activeElements, setActiveElements] = useState<HTMLElement[]>([]);
@@ -130,9 +132,9 @@ const TemplateEditor = ({
       containerRef: canvasRef,
       paperRefs,
       size: sizeExcSidebars,
-      hasRulers: true,
+      hasRulers: getShowRulers(options),
       initialZoomLevel: options.zoomLevel ?? 1,
-      initialZoomMode: options.zoomLevel === undefined ? 'fit-width' : 'manual',
+      initialZoomMode: options.zoomLevel === undefined ? getInitialZoomMode(options) : 'manual',
     });
   const previousOptionsZoomLevelRef = useRef(options.zoomLevel);
 
@@ -471,7 +473,7 @@ const TemplateEditor = ({
           style={{
             position: 'absolute',
             width: canvasWidth,
-            marginLeft: LEFT_SIDEBAR_WIDTH,
+            marginLeft: leftSidebarWidth,
           }}
         >
           <CtlBar

@@ -8,6 +8,8 @@ import { LEFT_SIDEBAR_WIDTH, DESIGNER_CLASSNAME } from '../../constants.js';
 import { setFontNameRecursively } from '../../helper';
 import { OptionsContext, PluginsRegistry } from '../../contexts.js';
 import PluginIcon from './PluginIcon.js';
+import GroupedFieldPalette from './GroupedFieldPalette.js';
+import { getFieldPalette, getLeftSidebarWidth } from '../../designerOptions.js';
 
 const Draggable = (props: {
   plugin: Plugin<Schema>;
@@ -81,6 +83,12 @@ const LeftSidebar = ({
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isDragging]);
+
+  const palette = getFieldPalette(options);
+  if (palette) {
+    const width = getLeftSidebarWidth(options);
+    return <GroupedFieldPalette {...{ palette, width, height, scale, basePdf, Draggable }} />;
+  }
 
   return (
     <div

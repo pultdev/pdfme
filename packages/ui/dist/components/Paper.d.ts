@@ -16,5 +16,7 @@ declare const Paper: (props: {
         schema: SchemaForUI;
     }) => ReactNode;
     hasRulers?: boolean;
+    /** A single page sits in the middle of the space above the control bar, instead of at the top. */
+    centerVertically?: boolean;
 }) => React.JSX.Element | null;
 export default Paper;

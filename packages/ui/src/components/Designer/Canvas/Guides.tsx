@@ -1,7 +1,9 @@
-import React, { Ref } from 'react';
+import React, { Ref, useContext } from 'react';
 import GuidesComponent from '@scena/react-guides';
 import { ZOOM, Size } from '@pdfme/common';
 import { RULER_HEIGHT } from '../../../constants.js';
+import { OptionsContext } from '../../../contexts.js';
+import { getShowRulers } from '../../../designerOptions.js';
 
 const GuidesView = GuidesComponent as unknown as React.ElementType;
 
@@ -48,4 +50,8 @@ const _Guides = ({
   </>
 );
 
-export default _Guides;
+/** The rulers, unless the designer's `rulers` option switches them off. */
+const Guides = (props: React.ComponentProps<typeof _Guides>) =>
+  getShowRulers(useContext(OptionsContext)) ? <_Guides {...props} /> : null;
+
+export default Guides;
