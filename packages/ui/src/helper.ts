@@ -426,7 +426,7 @@ export const getPagesScrollTopByIndex = (pageSizes: Size[], index: number, scale
     .reduce((acc, cur) => acc + (cur.height * ZOOM + RULER_HEIGHT * scale) * scale, 0);
 };
 
-export type ZoomMode = 'manual' | 'fit-width' | 'fit-height';
+export type ZoomMode = 'manual' | 'fit-width' | 'fit-height' | 'fit-page';
 
 export type ZoomAnchor = {
   pageIndex: number;
@@ -439,6 +439,20 @@ export type ZoomAnchor = {
 export const MIN_ZOOM = 0.25;
 
 const FIT_GUTTER = PAGE_GAP * 4;
+
+/** The space `fit-page` keeps around the page, in px. */
+export const FIT_PAGE_MARGIN = 16;
+
+// The control bar floats over the canvas, 6% of the designer's height above its bottom edge (see CtlBar).
+const CONTROL_BAR_BOTTOM_RATIO = 0.06;
+const CONTROL_BAR_HEIGHT = 46;
+
+/**
+ * The height `fit-page` has for the page and the margin around it: from the designer's top edge down to the control
+ * bar. `designerHeight` is the height of the designer, which its canvas shares.
+ */
+export const getFitPageHeight = (designerHeight: number) =>
+  Math.max(1, designerHeight * (1 - CONTROL_BAR_BOTTOM_RATIO) - CONTROL_BAR_HEIGHT);
 
 export const clampZoomLevel = (zoomLevel: number, maxZoom: number, minZoom: number = MIN_ZOOM) =>
   Math.min(Math.max(zoomLevel, minZoom), maxZoom);
@@ -465,9 +479,19 @@ export const getFitZoomLevel = ({
   const rulerSize = hasRulers ? RULER_HEIGHT : 0;
   const availableWidth = Math.max(1, container.clientWidth - rulerSize - FIT_GUTTER);
   const paperWidth = pageSize.width * ZOOM;
-  const fitScale = availableWidth / paperWidth;
+  const widthScale = availableWidth / paperWidth;
+  if (mode === 'fit-width') return clampZoomLevel(widthScale / baseScale, maxZoom);
 
-  return clampZoomLevel(fitScale / baseScale, maxZoom);
+  // fit-page: the whole page in view, between the top edge and the control bar.
+  const availableHeight = Math.max(
+    1,
+    getFitPageHeight(container.clientHeight) - rulerSize - FIT_PAGE_MARGIN * 2,
+  );
+  const fitPageWidth = Math.max(1, container.clientWidth - rulerSize - FIT_PAGE_MARGIN * 2);
+  const heightScale = availableHeight / (pageSize.height * ZOOM);
+  const pageWidthScale = fitPageWidth / paperWidth;
+
+  return clampZoomLevel(Math.min(pageWidthScale, heightScale) / baseScale, maxZoom);
 };
 
 export const getZoomAnchor = ({
