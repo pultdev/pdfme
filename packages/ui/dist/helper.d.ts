@@ -55,7 +55,7 @@ export declare const moveCommandToChangeSchemasArg: (props: {
     schemaId: string;
 }[];
 export declare const getPagesScrollTopByIndex: (pageSizes: Size[], index: number, scale: number) => number;
-export type ZoomMode = 'manual' | 'fit-width' | 'fit-height';
+export type ZoomMode = 'manual' | 'fit-width' | 'fit-height' | 'fit-page';
 export type ZoomAnchor = {
     pageIndex: number;
     localX: number;
@@ -64,6 +64,13 @@ export type ZoomAnchor = {
     clientY: number;
 };
 export declare const MIN_ZOOM = 0.25;
+/** The space `fit-page` keeps around the page, in px. */
+export declare const FIT_PAGE_MARGIN = 16;
+/**
+ * The height `fit-page` has for the page and the margin around it: from the designer's top edge down to the control
+ * bar. `designerHeight` is the height of the designer, which its canvas shares.
+ */
+export declare const getFitPageHeight: (designerHeight: number) => number;
 export declare const clampZoomLevel: (zoomLevel: number, maxZoom: number, minZoom?: number) => number;
 export declare const getFitZoomLevel: ({ mode, pageSize, container, baseScale, maxZoom, hasRulers, }: {
     mode: Exclude<ZoomMode, "manual">;

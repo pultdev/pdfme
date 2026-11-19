@@ -79150,13 +79150,27 @@ var getPagesScrollTopByIndex = (pageSizes, index, scale) => {
 };
 var MIN_ZOOM = .25;
 var FIT_GUTTER = 40;
+var CONTROL_BAR_HEIGHT = 46;
+/**
+* The height `fit-page` has for the page and the margin around it: from the designer's top edge down to the control
+* bar. `designerHeight` is the height of the designer, which its canvas shares.
+*/
+var getFitPageHeight = (designerHeight) => Math.max(1, designerHeight * .94 - CONTROL_BAR_HEIGHT);
 var clampZoomLevel = (zoomLevel, maxZoom, minZoom = MIN_ZOOM) => Math.min(Math.max(zoomLevel, minZoom), maxZoom);
 var getFitZoomLevel = ({ mode, pageSize, container, baseScale, maxZoom, hasRulers = false }) => {
 	if (baseScale <= 0) return 1;
 	if (mode === "fit-height") return clampZoomLevel(1, maxZoom);
 	if (!pageSize || !container) return 1;
 	const rulerSize = hasRulers ? 30 : 0;
-	return clampZoomLevel(Math.max(1, container.clientWidth - rulerSize - FIT_GUTTER) / (pageSize.width * ZOOM) / baseScale, maxZoom);
+	const availableWidth = Math.max(1, container.clientWidth - rulerSize - FIT_GUTTER);
+	const paperWidth = pageSize.width * ZOOM;
+	const widthScale = availableWidth / paperWidth;
+	if (mode === "fit-width") return clampZoomLevel(widthScale / baseScale, maxZoom);
+	const availableHeight = Math.max(1, getFitPageHeight(container.clientHeight) - rulerSize - 32);
+	const fitPageWidth = Math.max(1, container.clientWidth - rulerSize - 32);
+	const heightScale = availableHeight / (pageSize.height * ZOOM);
+	const pageWidthScale = fitPageWidth / paperWidth;
+	return clampZoomLevel(Math.min(pageWidthScale, heightScale) / baseScale, maxZoom);
 };
 var getZoomAnchor = ({ pageIndex, paper, clientX, clientY, scale }) => {
 	if (!paper || scale <= 0) return null;
@@ -196461,7 +196475,7 @@ function createContext$1(defaultValue) {
 /** e.g. useSelect(userContext, user => user.name) => user.name */
 /** e.g. useSelect(userContext, ['name', 'age']) => user { name, age } */
 /** e.g. useSelect(userContext, 'name') => user.name */
-function useContext$17(holder, selector) {
+function useContext$19(holder, selector) {
 	var eventSelector = useEvent(typeof selector === "function" ? selector : function(ctx) {
 		if (selector === void 0) return ctx;
 		if (!Array.isArray(selector)) return ctx[selector];
@@ -196633,7 +196647,7 @@ function inHoverRange(cellStartRow, cellRowSpan, startRow, endRow) {
 	return cellStartRow <= endRow && cellEndRow >= startRow;
 }
 function useHoverState(rowIndex, rowSpan) {
-	return useContext$17(TableContext, function(ctx) {
+	return useContext$19(TableContext, function(ctx) {
 		return [inHoverRange(rowIndex, rowSpan || 1, ctx.hoverStartRow, ctx.hoverEndRow), ctx.onHover];
 	});
 }
@@ -196653,7 +196667,7 @@ function Cell(props) {
 	var _ref2, _ref3, _legacyCellProps$colS, _ref4, _ref5, _legacyCellProps$rowS, _additionalProps$titl, _classNames;
 	var Component = props.component, children = props.children, ellipsis = props.ellipsis, scope = props.scope, prefixCls = props.prefixCls, className = props.className, align = props.align, record = props.record, render = props.render, dataIndex = props.dataIndex, renderIndex = props.renderIndex, shouldCellUpdate = props.shouldCellUpdate, index = props.index, rowType = props.rowType, colSpan = props.colSpan, rowSpan = props.rowSpan, fixLeft = props.fixLeft, fixRight = props.fixRight, firstFixLeft = props.firstFixLeft, lastFixLeft = props.lastFixLeft, firstFixRight = props.firstFixRight, lastFixRight = props.lastFixRight, appendNode = props.appendNode, _props$additionalProp = props.additionalProps, additionalProps = _props$additionalProp === void 0 ? {} : _props$additionalProp, isSticky = props.isSticky;
 	var cellPrefixCls = "".concat(prefixCls, "-cell");
-	var _useContext = useContext$17(TableContext, [
+	var _useContext = useContext$19(TableContext, [
 		"supportSticky",
 		"allColumnsFixedLeft",
 		"rowHoverable"
@@ -196748,7 +196762,7 @@ var SummaryContext = /*#__PURE__*/ import_react$9.createContext({});
 //#region ../../node_modules/rc-table/es/Footer/Cell.js
 function SummaryCell(_ref) {
 	var className = _ref.className, index = _ref.index, children = _ref.children, _ref$colSpan = _ref.colSpan, colSpan = _ref$colSpan === void 0 ? 1 : _ref$colSpan, rowSpan = _ref.rowSpan, align = _ref.align;
-	var _useContext = useContext$17(TableContext, ["prefixCls", "direction"]), prefixCls = _useContext.prefixCls, direction = _useContext.direction;
+	var _useContext = useContext$19(TableContext, ["prefixCls", "direction"]), prefixCls = _useContext.prefixCls, direction = _useContext.direction;
 	var _React$useContext = import_react$9.useContext(SummaryContext), scrollColumnIndex = _React$useContext.scrollColumnIndex, stickyOffsets = _React$useContext.stickyOffsets, flattenColumns = _React$useContext.flattenColumns;
 	var mergedColSpan = index + colSpan - 1 + 1 === scrollColumnIndex ? colSpan + 1 : colSpan;
 	var fixedInfo = getCellFixedInfo(index, index + mergedColSpan - 1, flattenColumns, stickyOffsets, direction);
@@ -196788,7 +196802,7 @@ Summary.Cell = SummaryCell;
 //#region ../../node_modules/rc-table/es/Footer/index.js
 function Footer(props) {
 	var children = props.children, stickyOffsets = props.stickyOffsets, flattenColumns = props.flattenColumns;
-	var prefixCls = useContext$17(TableContext, "prefixCls");
+	var prefixCls = useContext$19(TableContext, "prefixCls");
 	var lastColumnIndex = flattenColumns.length - 1;
 	var scrollColumn = flattenColumns[lastColumnIndex];
 	var summaryContext = import_react$9.useMemo(function() {
@@ -196902,7 +196916,7 @@ function useFlattenRecords(data, childrenColumnName, expandedKeys, getRowKey) {
 //#endregion
 //#region ../../node_modules/rc-table/es/hooks/useRowInfo.js
 function useRowInfo(record, rowKey, recordIndex, indent) {
-	var context = useContext$17(TableContext, [
+	var context = useContext$19(TableContext, [
 		"prefixCls",
 		"fixedInfoList",
 		"flattenColumns",
@@ -196957,7 +196971,7 @@ function useRowInfo(record, rowKey, recordIndex, indent) {
 //#region ../../node_modules/rc-table/es/Body/ExpandedRow.js
 function ExpandedRow(props) {
 	var prefixCls = props.prefixCls, children = props.children, Component = props.component, cellComponent = props.cellComponent, className = props.className, expanded = props.expanded, colSpan = props.colSpan, isEmpty = props.isEmpty, _props$stickyOffset = props.stickyOffset, stickyOffset = _props$stickyOffset === void 0 ? 0 : _props$stickyOffset;
-	var _useContext = useContext$17(TableContext, [
+	var _useContext = useContext$19(TableContext, [
 		"scrollbarSize",
 		"fixHeader",
 		"fixColumn",
@@ -197120,7 +197134,7 @@ function MeasureCell(_ref) {
 function MeasureRow(_ref) {
 	var prefixCls = _ref.prefixCls, columnsKey = _ref.columnsKey, onColumnResize = _ref.onColumnResize, columns = _ref.columns;
 	var ref = import_react$9.useRef(null);
-	var measureRowRender = useContext$17(TableContext, ["measureRowRender"]).measureRowRender;
+	var measureRowRender = useContext$19(TableContext, ["measureRowRender"]).measureRowRender;
 	var measureRow = /*#__PURE__*/ import_react$9.createElement("tr", {
 		"aria-hidden": "true",
 		className: "".concat(prefixCls, "-measure-row"),
@@ -197151,7 +197165,7 @@ function MeasureRow(_ref) {
 //#region ../../node_modules/rc-table/es/Body/index.js
 function Body(props) {
 	var data = props.data, measureColumnWidth = props.measureColumnWidth;
-	var _useContext = useContext$17(TableContext, [
+	var _useContext = useContext$19(TableContext, [
 		"prefixCls",
 		"getComponent",
 		"onColumnResize",
@@ -197241,7 +197255,7 @@ function getExpandableProps(props) {
 var _excluded$5 = ["columnType"];
 function ColGroup(_ref) {
 	var colWidths = _ref.colWidths, columns = _ref.columns, columCount = _ref.columCount;
-	var tableLayout = useContext$17(TableContext, ["tableLayout"]).tableLayout;
+	var tableLayout = useContext$19(TableContext, ["tableLayout"]).tableLayout;
 	var cols = [];
 	var len = columCount || columns.length;
 	var mustInsert = false;
@@ -197304,7 +197318,7 @@ function useColumnWidth(colWidths, columCount) {
 }
 var FixedHolder = /*#__PURE__*/ import_react$9.forwardRef(function(props, ref) {
 	var className = props.className, noData = props.noData, columns = props.columns, flattenColumns = props.flattenColumns, colWidths = props.colWidths, colGroup = props.colGroup, columCount = props.columCount, stickyOffsets = props.stickyOffsets, direction = props.direction, fixHeader = props.fixHeader, stickyTopOffset = props.stickyTopOffset, stickyBottomOffset = props.stickyBottomOffset, stickyClassName = props.stickyClassName, scrollX = props.scrollX, _props$tableLayout = props.tableLayout, tableLayout = _props$tableLayout === void 0 ? "fixed" : _props$tableLayout, onScroll = props.onScroll, children = props.children, restProps = _objectWithoutProperties$2(props, _excluded$4);
-	var _useContext = useContext$17(TableContext, [
+	var _useContext = useContext$19(TableContext, [
 		"prefixCls",
 		"scrollbarSize",
 		"isSticky",
@@ -197398,7 +197412,7 @@ var FixedHolder_default = /*#__PURE__*/ import_react$9.memo(FixedHolder);
 //#region ../../node_modules/rc-table/es/Header/HeaderRow.js
 var HeaderRow = function HeaderRow(props) {
 	var cells = props.cells, stickyOffsets = props.stickyOffsets, flattenColumns = props.flattenColumns, RowComponent = props.rowComponent, CellComponent = props.cellComponent, onHeaderRow = props.onHeaderRow, index = props.index;
-	var _useContext = useContext$17(TableContext, ["prefixCls", "direction"]), prefixCls = _useContext.prefixCls, direction = _useContext.direction;
+	var _useContext = useContext$19(TableContext, ["prefixCls", "direction"]), prefixCls = _useContext.prefixCls, direction = _useContext.direction;
 	var rowProps;
 	if (onHeaderRow) rowProps = onHeaderRow(cells.map(function(cell) {
 		return cell.column;
@@ -197469,7 +197483,7 @@ function parseHeaderRows(rootColumns) {
 }
 var Header_default = responseImmutable(function Header(props) {
 	var stickyOffsets = props.stickyOffsets, columns = props.columns, flattenColumns = props.flattenColumns, onHeaderRow = props.onHeaderRow;
-	var _useContext = useContext$17(TableContext, ["prefixCls", "getComponent"]), prefixCls = _useContext.prefixCls, getComponent = _useContext.getComponent;
+	var _useContext = useContext$19(TableContext, ["prefixCls", "getComponent"]), prefixCls = _useContext.prefixCls, getComponent = _useContext.getComponent;
 	var rows = import_react$9.useMemo(function() {
 		return parseHeaderRows(columns);
 	}, [columns]);
@@ -197921,7 +197935,7 @@ function getOffset(node) {
 var stickyScrollBar_default = /*#__PURE__*/ import_react$9.forwardRef(function StickyScrollBar(_ref, ref) {
 	var _scrollBodyRef$curren, _scrollBodyRef$curren2;
 	var scrollBodyRef = _ref.scrollBodyRef, onScroll = _ref.onScroll, offsetScroll = _ref.offsetScroll, container = _ref.container, direction = _ref.direction;
-	var prefixCls = useContext$17(TableContext, "prefixCls");
+	var prefixCls = useContext$19(TableContext, "prefixCls");
 	var bodyScrollWidth = ((_scrollBodyRef$curren = scrollBodyRef.current) === null || _scrollBodyRef$curren === void 0 ? void 0 : _scrollBodyRef$curren.scrollWidth) || 0;
 	var bodyWidth = ((_scrollBodyRef$curren2 = scrollBodyRef.current) === null || _scrollBodyRef$curren2 === void 0 ? void 0 : _scrollBodyRef$curren2.clientWidth) || 0;
 	var scrollBarWidth = bodyScrollWidth && bodyWidth * (bodyWidth / bodyScrollWidth);
@@ -198512,7 +198526,7 @@ function getColumnWidth(colIndex, colSpan, columnsOffset) {
 function VirtualCell$1(props) {
 	var rowInfo = props.rowInfo, column = props.column, colIndex = props.colIndex, indent = props.indent, index = props.index, component = props.component, renderIndex = props.renderIndex, record = props.record, style = props.style, className = props.className, inverse = props.inverse, getHeight = props.getHeight;
 	var render = column.render, dataIndex = column.dataIndex, columnClassName = column.className, colWidth = column.width;
-	var columnsOffset = useContext$17(GridContext, ["columnsOffset"]).columnsOffset;
+	var columnsOffset = useContext$19(GridContext, ["columnsOffset"]).columnsOffset;
 	var _getCellProps = getCellProps(rowInfo, column, colIndex, indent, index), key = _getCellProps.key, fixedInfo = _getCellProps.fixedInfo, appendCellNode = _getCellProps.appendCellNode, additionalCellProps = _getCellProps.additionalCellProps;
 	var cellStyle = additionalCellProps.style, _additionalCellProps$ = additionalCellProps.colSpan, colSpan = _additionalCellProps$ === void 0 ? 1 : _additionalCellProps$, _additionalCellProps$2 = additionalCellProps.rowSpan, rowSpan = _additionalCellProps$2 === void 0 ? 1 : _additionalCellProps$2;
 	var concatColWidth = getColumnWidth(colIndex - 1, colSpan, columnsOffset);
@@ -198574,14 +198588,14 @@ var _excluded$2 = [
 var ResponseBodyLine = responseImmutable(/* @__PURE__ */ import_react$9.forwardRef(function(props, ref) {
 	var data = props.data, index = props.index, className = props.className, rowKey = props.rowKey, style = props.style, extra = props.extra, getHeight = props.getHeight, restProps = _objectWithoutProperties$2(props, _excluded$2);
 	var record = data.record, indent = data.indent, renderIndex = data.index;
-	var _useContext = useContext$17(TableContext, [
+	var _useContext = useContext$19(TableContext, [
 		"prefixCls",
 		"flattenColumns",
 		"fixColumn",
 		"componentWidth",
 		"scrollX"
 	]), scrollX = _useContext.scrollX, flattenColumns = _useContext.flattenColumns, prefixCls = _useContext.prefixCls, fixColumn = _useContext.fixColumn, componentWidth = _useContext.componentWidth;
-	var getComponent = useContext$17(StaticContext, ["getComponent"]).getComponent;
+	var getComponent = useContext$19(StaticContext, ["getComponent"]).getComponent;
 	var rowInfo = useRowInfo(record, rowKey, index, indent);
 	var RowComponent = getComponent(["body", "row"], "div");
 	var cellComponent = getComponent(["body", "cell"], "div");
@@ -198632,7 +198646,7 @@ var ResponseBodyLine = responseImmutable(/* @__PURE__ */ import_react$9.forwardR
 //#region ../../node_modules/rc-table/es/VirtualTable/BodyGrid.js
 var ResponseGrid = responseImmutable(/* @__PURE__ */ import_react$9.forwardRef(function(props, ref) {
 	var data = props.data, onScroll = props.onScroll;
-	var _useContext = useContext$17(TableContext, [
+	var _useContext = useContext$19(TableContext, [
 		"flattenColumns",
 		"onColumnResize",
 		"getRowKey",
@@ -198642,7 +198656,7 @@ var ResponseGrid = responseImmutable(/* @__PURE__ */ import_react$9.forwardRef(f
 		"scrollX",
 		"direction"
 	]), flattenColumns = _useContext.flattenColumns, onColumnResize = _useContext.onColumnResize, getRowKey = _useContext.getRowKey, expandedKeys = _useContext.expandedKeys, prefixCls = _useContext.prefixCls, childrenColumnName = _useContext.childrenColumnName, scrollX = _useContext.scrollX, direction = _useContext.direction;
-	var _useContext2 = useContext$17(StaticContext), sticky = _useContext2.sticky, scrollY = _useContext2.scrollY, listItemHeight = _useContext2.listItemHeight, getComponent = _useContext2.getComponent, onTablePropScroll = _useContext2.onScroll;
+	var _useContext2 = useContext$19(StaticContext), sticky = _useContext2.sticky, scrollY = _useContext2.scrollY, listItemHeight = _useContext2.listItemHeight, getComponent = _useContext2.getComponent, onTablePropScroll = _useContext2.onScroll;
 	var listRef = import_react$9.useRef();
 	var flattenData = useFlattenRecords(data, childrenColumnName, expandedKeys, getRowKey);
 	var columnsWidth = import_react$9.useMemo(function() {
@@ -207503,6 +207517,161 @@ Check this document: https://pdfme.com/docs/custom-schemas`);
 	});
 };
 //#endregion
+//#region src/designerOptions.ts
+var MIN_PALETTE_WIDTH = 120;
+var MAX_PALETTE_WIDTH = 320;
+var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var readItem = (value) => {
+	if (!isRecord(value) || typeof value.type !== "string") return null;
+	return typeof value.label === "string" ? {
+		type: value.type,
+		label: value.label
+	} : { type: value.type };
+};
+var readGroup = (value) => {
+	if (!isRecord(value) || typeof value.title !== "string" || !Array.isArray(value.items)) return null;
+	const items = value.items.map(readItem).filter((item) => item !== null);
+	return {
+		title: value.title,
+		items
+	};
+};
+var getInitialZoomMode = (options) => options.initialZoomMode === "fit-page" ? "fit-page" : "fit-width";
+var getFieldPalette = (options) => {
+	const palette = options.fieldPalette;
+	if (!isRecord(palette) || !Array.isArray(palette.groups)) return null;
+	const fieldPalette = { groups: palette.groups.map(readGroup).filter((group) => group !== null) };
+	if (typeof palette.hint === "string" && palette.hint !== "") fieldPalette.hint = palette.hint;
+	if (typeof palette.width === "number" && Number.isFinite(palette.width)) fieldPalette.width = Math.min(MAX_PALETTE_WIDTH, Math.max(MIN_PALETTE_WIDTH, palette.width));
+	return fieldPalette;
+};
+var getLeftSidebarWidth = (options) => getFieldPalette(options)?.width ?? 160;
+var getCanvasBackground = (options) => typeof options.canvasBackground === "string" && options.canvasBackground !== "" ? options.canvasBackground : BACKGROUND_COLOR;
+var getShowRulers = (options) => options.rulers !== false;
+/**
+* The palette's groups as sections of registered plugins, in the groups' order and under their labels. A group
+* with no registered field is dropped; a plugin no group names goes last, untitled, so no field ever disappears.
+*/
+var toSections = (groups, entries) => {
+	const byType = new Map(entries.map((entry) => [entry.plugin.propPanel.defaultSchema.type, entry]));
+	const placed = /* @__PURE__ */ new Set();
+	const sections = groups.map((group) => ({
+		title: group.title,
+		entries: group.items.flatMap((item) => {
+			const entry = byType.get(item.type);
+			if (!entry || placed.has(item.type)) return [];
+			placed.add(item.type);
+			return [{
+				label: item.label ?? entry.label,
+				plugin: entry.plugin
+			}];
+		})
+	}));
+	const rest = entries.filter((entry) => !placed.has(entry.plugin.propPanel.defaultSchema.type));
+	return [...sections, { entries: rest }].filter((section) => section.entries.length > 0);
+};
+//#endregion
+//#region src/components/Designer/GroupedFieldPalette.tsx
+/**
+* The left sidebar of a designer that opts into `fieldPalette`: the fields in titled groups under a hint, with
+* labels that wrap. LeftSidebar renders it in place of its flat list and hands over its own Draggable.
+*/
+var GroupedFieldPalette = ({ palette, width, height, scale, basePdf, Draggable }) => {
+	const { token } = theme.useToken();
+	const pluginsRegistry = (0, import_react$9.useContext)(PluginsRegistry);
+	const options = (0, import_react$9.useContext)(OptionsContext);
+	const [isDragging, setIsDragging] = (0, import_react$9.useState)(false);
+	(0, import_react$9.useEffect)(() => {
+		const handleMouseUp = () => setIsDragging(false);
+		document.addEventListener("mouseup", handleMouseUp);
+		return () => document.removeEventListener("mouseup", handleMouseUp);
+	}, []);
+	const entries = pluginsRegistry.entries().flatMap(([label, plugin]) => plugin?.propPanel.defaultSchema ? [{
+		label,
+		plugin
+	}] : []);
+	const smallText = {
+		textAlign: "left",
+		color: token.colorTextSecondary
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: DESIGNER_CLASSNAME + "left-sidebar",
+		style: {
+			left: 0,
+			right: 0,
+			position: "absolute",
+			zIndex: 1,
+			height,
+			width,
+			background: token.colorBgLayout,
+			textAlign: "center",
+			overflow: isDragging ? "visible" : "auto"
+		},
+		children: [palette.hint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "pdfme-designer-palette-hint",
+			style: {
+				...smallText,
+				padding: "0.5rem 0.5rem 0",
+				fontSize: 12,
+				lineHeight: 1.35
+			},
+			children: palette.hint
+		}), toSections(palette.groups, entries).map((section, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_react$9.Fragment, { children: [section.title && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "pdfme-designer-palette-group-title",
+			style: {
+				...smallText,
+				padding: "0.75rem 0.5rem 0",
+				fontSize: 11,
+				fontWeight: 600,
+				letterSpacing: "0.06em",
+				textTransform: "uppercase"
+			},
+			children: section.title
+		}), section.entries.map(({ label, plugin }) => {
+			const pluginType = plugin.propPanel.defaultSchema.type;
+			const hasIcon = Boolean(options.icons?.[pluginType] ?? plugin.icon);
+			return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Draggable, {
+				scale,
+				basePdf,
+				plugin,
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(button_default$1, {
+					className: DESIGNER_CLASSNAME + "plugin-" + pluginType,
+					onMouseDown: () => setIsDragging(true),
+					style: {
+						width: "calc(100% - 0.5rem)",
+						height: "auto",
+						minHeight: 35,
+						marginTop: "0.25rem",
+						padding: "0.25rem 0.5rem",
+						justifyContent: "flex-start",
+						gap: "0.5rem",
+						cursor: "grab",
+						textAlign: "left"
+					},
+					children: [hasIcon && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PluginIcon, {
+						plugin,
+						label
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						title: label,
+						style: {
+							fontSize: 12,
+							lineHeight: 1.3,
+							minWidth: 0,
+							overflow: "hidden",
+							whiteSpace: "normal",
+							overflowWrap: "anywhere",
+							display: "-webkit-box",
+							WebkitBoxOrient: "vertical",
+							WebkitLineClamp: 2
+						},
+						children: label
+					})]
+				})
+			}, pluginType);
+		})] }, section.title ?? `section-${index}`))]
+	});
+};
+//#endregion
 //#region src/components/Designer/LeftSidebar.tsx
 var Draggable$1 = (props) => {
 	const { scale, basePdf, plugin } = props;
@@ -207560,6 +207729,18 @@ var LeftSidebar = ({ height, scale, basePdf }) => {
 			document.removeEventListener("mouseup", handleMouseUp);
 		};
 	}, [isDragging]);
+	const palette = getFieldPalette(options);
+	if (palette) {
+		const width = getLeftSidebarWidth(options);
+		return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GroupedFieldPalette, {
+			palette,
+			width,
+			height,
+			scale,
+			basePdf,
+			Draggable: Draggable$1
+		});
+	}
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 		className: DESIGNER_CLASSNAME + "left-sidebar",
 		style: {
@@ -207613,7 +207794,7 @@ var LeftSidebar = ({ height, scale, basePdf }) => {
 //#endregion
 //#region src/components/Paper.tsx
 var Paper = (props) => {
-	const { paperRefs, scale, size, schemasList, pageSizes, backgrounds, renderPaper, renderSchema, hasRulers } = props;
+	const { paperRefs, scale, size, schemasList, pageSizes, backgrounds, renderPaper, renderSchema, hasRulers, centerVertically } = props;
 	const font = (0, import_react$9.useContext)(FontContext);
 	const rulerHeight = hasRulers ? 30 : 0;
 	if (pageSizes.length !== backgrounds.length || pageSizes.length !== schemasList.length) return null;
@@ -207633,6 +207814,10 @@ var Paper = (props) => {
 			const leftCenteringIndent = paperSize.width * scale + rulerHeight < size.width ? `${(size.width / scale - paperSize.width) / 2}px` : `${rulerHeight}px`;
 			let pageTop = paperIndex > 0 ? (rulerHeight + 10) * (paperIndex + 1) : rulerHeight;
 			if (!hasRulers) pageTop += 20;
+			if (centerVertically && backgrounds.length === 1 && scale > 0) {
+				const centred = (getFitPageHeight(size.height) / scale - paperSize.height) / 2;
+				pageTop = Math.max(rulerHeight, centred);
+			}
 			return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				ref: (e) => {
 					if (e) paperRefs.current[paperIndex] = e;
@@ -227537,6 +227722,8 @@ var _Guides = ({ paperSize, horizontalRef, verticalRef }) => /* @__PURE__ */ (0,
 		ref: verticalRef
 	})
 ] });
+/** The rulers, unless the designer's `rulers` option switches them off. */
+var Guides = (props) => getShowRulers((0, import_react$9.useContext)(OptionsContext)) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(_Guides, { ...props }) : null;
 //#endregion
 //#region src/components/Designer/Canvas/Mask.tsx
 var Mask = ({ width, height }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
@@ -227654,6 +227841,7 @@ var Canvas = (props, ref) => {
 	const { basePdf, pageCursor, scale, renderScale, backgrounds, pageSizes, size, activeElements, schemasList, hoveringSchemaId, onEdit, changeSchemas, removeSchemas, onChangeHoveringSchemaId, paperRefs, sidebarOpen } = props;
 	const { token } = theme.useToken();
 	const pluginsRegistry = (0, import_react$9.useContext)(PluginsRegistry);
+	const options = (0, import_react$9.useContext)(OptionsContext);
 	const verticalGuides = (0, import_react$9.useRef)([]);
 	const horizontalGuides = (0, import_react$9.useRef)([]);
 	const moveable = (0, import_react$9.useRef)(null);
@@ -227915,7 +228103,8 @@ var Canvas = (props, ref) => {
 			schemasList,
 			pageSizes,
 			backgrounds,
-			hasRulers: true,
+			hasRulers: getShowRulers(options),
+			centerVertically: getInitialZoomMode(options) === "fit-page",
 			renderPaper: ({ index, paperSize }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 				!editing && activeElements.length > 0 && pageCursor === index && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DeleteButton, {
 					activeElements,
@@ -227932,7 +228121,7 @@ var Canvas = (props, ref) => {
 					totalPages: schemasList.length,
 					currentPage: index + 1
 				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(_Guides, {
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Guides, {
 					paperSize,
 					horizontalRef: (e) => {
 						if (e) horizontalGuides.current[index] = e;
@@ -228119,6 +228308,7 @@ var Spinner = () => {
 //#region src/components/Root.tsx
 var Root = ({ size, scale, children }, ref) => {
 	const font = (0, import_react$9.useContext)(FontContext);
+	const options = (0, import_react$9.useContext)(OptionsContext);
 	(0, import_react$9.useEffect)(() => {
 		if (!document || !document.fonts) return;
 		const newFontFaces = Object.entries(font).map(([key, { data }]) => new FontFace(key, typeof data === "string" ? `url(${data})` : data, { display: "swap" })).filter((fontFace) => !document.fonts.has(fontFace));
@@ -228133,7 +228323,7 @@ var Root = ({ size, scale, children }, ref) => {
 		ref,
 		style: {
 			position: "relative",
-			background: BACKGROUND_COLOR,
+			background: getCanvasBackground(options),
 			...size
 		},
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
@@ -228441,7 +228631,8 @@ var TemplateEditor = ({ template, size, onSaveTemplate, onChangeTemplate, onPage
 	const pluginsRegistry = (0, import_react$9.useContext)(PluginsRegistry);
 	const options = (0, import_react$9.useContext)(OptionsContext);
 	const maxZoom = useMaxZoom();
-	const canvasWidth = size.width - 160;
+	const leftSidebarWidth = getLeftSidebarWidth(options);
+	const canvasWidth = size.width - leftSidebarWidth;
 	const [hoveringSchemaId, setHoveringSchemaId] = (0, import_react$9.useState)(null);
 	const [activeElements, setActiveElements] = (0, import_react$9.useState)([]);
 	const [schemasList, setSchemasList] = (0, import_react$9.useState)([[]]);
@@ -228471,9 +228662,9 @@ var TemplateEditor = ({ template, size, onSaveTemplate, onChangeTemplate, onPage
 		containerRef: canvasRef,
 		paperRefs,
 		size: sizeExcSidebars,
-		hasRulers: true,
+		hasRulers: getShowRulers(options),
 		initialZoomLevel: options.zoomLevel ?? 1,
-		initialZoomMode: options.zoomLevel === void 0 ? "fit-width" : "manual"
+		initialZoomMode: options.zoomLevel === void 0 ? getInitialZoomMode(options) : "manual"
 	});
 	const previousOptionsZoomLevelRef = (0, import_react$9.useRef)(options.zoomLevel);
 	const getElementsByIds = (ids) => ids.map((id) => document.getElementById(id)).filter((element) => element instanceof HTMLElement);
@@ -228746,7 +228937,7 @@ var TemplateEditor = ({ template, size, onSaveTemplate, onChangeTemplate, onPage
 				style: {
 					position: "absolute",
 					width: canvasWidth,
-					marginLeft: 160
+					marginLeft: leftSidebarWidth
 				},
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CtlBar, {
