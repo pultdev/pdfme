@@ -24,7 +24,7 @@ import RightSidebar from './RightSidebar/index.js';
 import LeftSidebar from './LeftSidebar.js';
 import Canvas from './Canvas/index.js';
 import { RULER_HEIGHT, RIGHT_SIDEBAR_WIDTH } from '../../constants.js';
-import { getInitialZoomMode, getLeftSidebarWidth } from '../../designerOptions.js';
+import { getInitialZoomMode, getLeftSidebarWidth, getShowRulers } from '../../designerOptions.js';
 import { I18nContext, OptionsContext, PluginsRegistry } from '../../contexts.js';
 import {
   schemasList2template,
@@ -132,7 +132,7 @@ const TemplateEditor = ({
       containerRef: canvasRef,
       paperRefs,
       size: sizeExcSidebars,
-      hasRulers: true,
+      hasRulers: getShowRulers(options),
       initialZoomLevel: options.zoomLevel ?? 1,
       initialZoomMode: options.zoomLevel === undefined ? getInitialZoomMode(options) : 'manual',
     });
