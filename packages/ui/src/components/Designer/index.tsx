@@ -23,8 +23,8 @@ import { DndContext, type DragEndEvent } from '@dnd-kit/core';
 import RightSidebar from './RightSidebar/index.js';
 import LeftSidebar from './LeftSidebar.js';
 import Canvas from './Canvas/index.js';
-import { RULER_HEIGHT, RIGHT_SIDEBAR_WIDTH, LEFT_SIDEBAR_WIDTH } from '../../constants.js';
-import { getInitialZoomMode } from '../../designerOptions.js';
+import { RULER_HEIGHT, RIGHT_SIDEBAR_WIDTH } from '../../constants.js';
+import { getInitialZoomMode, getLeftSidebarWidth } from '../../designerOptions.js';
 import { I18nContext, OptionsContext, PluginsRegistry } from '../../contexts.js';
 import {
   schemasList2template,
@@ -91,7 +91,8 @@ const TemplateEditor = ({
   const options = useContext(OptionsContext);
   const maxZoom = useMaxZoom();
 
-  const canvasWidth = size.width - LEFT_SIDEBAR_WIDTH;
+  const leftSidebarWidth = getLeftSidebarWidth(options);
+  const canvasWidth = size.width - leftSidebarWidth;
 
   const [hoveringSchemaId, setHoveringSchemaId] = useState<string | null>(null);
   const [activeElements, setActiveElements] = useState<HTMLElement[]>([]);
@@ -472,7 +473,7 @@ const TemplateEditor = ({
           style={{
             position: 'absolute',
             width: canvasWidth,
-            marginLeft: LEFT_SIDEBAR_WIDTH,
+            marginLeft: leftSidebarWidth,
           }}
         >
           <CtlBar
